@@ -434,7 +434,7 @@ export function SearchInterface({ data, onSearch, onClose }: SearchInterfaceProp
                              <textarea
                                 value={query}
                                 onChange={(e) => setQuery(e.target.value)}
-                                placeholder="✨ ASK THE ORACLE (e.g., 'Where I can Trade with low fees ?' or 'I want to Play games')"
+                                placeholder="ASK THE MONAD ORACLE (e.g., 'Where I can Trade with low fees ?' or 'I want to Play games')"
                                 style={{
                                     background: 'rgba(0,0,0,0.3)',
                                     border: '1px solid rgba(131, 110, 249, 1)',
