@@ -222,7 +222,7 @@ function App() {
             }}
             style={{
               position: 'absolute',
-              bottom: '10px',
+              bottom: '35px',
               right: '10px',
               width: '50px',
               height: '50px',
