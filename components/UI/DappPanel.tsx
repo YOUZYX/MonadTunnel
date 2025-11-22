@@ -56,6 +56,7 @@ export function DappPanel({ dapp, onClose }: DappPanelProps) {
     >
         <div 
             ref={panelRef}
+            className="dapp-panel-scroll"
             onMouseMove={handleMouseMove}
             onMouseLeave={handleMouseLeave}
             style={{

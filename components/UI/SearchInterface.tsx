@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { getAiRecommendation } from '../../services/aiClient';
@@ -26,6 +25,9 @@ const INFRA_TAGS = [
 ];
 
 const THEME_COLOR = '#836EF9';
+
+const AmbientLight = 'ambientLight' as any;
+const PointLight = 'pointLight' as any;
 
 // --- Icons ---
 
@@ -409,8 +411,8 @@ export function SearchInterface({ data, onSearch, onClose }: SearchInterfaceProp
                          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', transform: 'translateZ(40px)' }}>
                             <div style={{ width: '240px', height: '240px' }}>
                                 <Canvas camera={{ position: [0, 0, 4] }} gl={{ alpha: true }}>
-                                    <ambientLight intensity={1} />
-                                    <pointLight position={[10, 10, 10]} intensity={2} />
+                                    <AmbientLight intensity={1} />
+                                    <PointLight position={[10, 10, 10]} intensity={2} />
                                     <MonadLogoFill position={[0,0,0]} onClick={() => {}} />
                                 </Canvas>
                             </div>
@@ -432,10 +434,10 @@ export function SearchInterface({ data, onSearch, onClose }: SearchInterfaceProp
                              <textarea
                                 value={query}
                                 onChange={(e) => setQuery(e.target.value)}
-                                placeholder="// ASK THE ORACLE (e.g., 'Find high yield stablecoin farms' or 'Play games')"
+                                placeholder="✨ ASK THE ORACLE (e.g., 'Where I can Trade with low fees ?' or 'I want to Play games')"
                                 style={{
                                     background: 'rgba(0,0,0,0.3)',
-                                    border: '1px solid rgba(255,255,255,0.1)',
+                                    border: '1px solid rgba(131, 110, 249, 1)',
                                     borderRadius: '20px',
                                     padding: '24px',
                                     color: 'white',
@@ -453,7 +455,7 @@ export function SearchInterface({ data, onSearch, onClose }: SearchInterfaceProp
                                 }}
                                 onBlur={(e) => e.target.style.border = '1px solid rgba(255,255,255,0.1)'}
                             />
-                            <Button3D primary type="submit">INITIATE SCAN</Button3D>
+                            <Button3D primary type="submit">AI SCAN</Button3D>
                         </form>
                     )}
                 </div>
@@ -643,7 +645,7 @@ export function SearchInterface({ data, onSearch, onClose }: SearchInterfaceProp
                                 primary 
                                 onClick={() => onSearch(manualMatches)}
                             >
-                                WARP TO SELECTION
+                                FILTRE SEARCH
                             </Button3D>
                         )}
                     </div>

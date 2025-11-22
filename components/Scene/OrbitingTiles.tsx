@@ -1,9 +1,15 @@
-
 import React, { useRef, useState, useEffect, useMemo } from 'react';
 import { useFrame, extend } from '@react-three/fiber';
 import { Text, shaderMaterial, Billboard, RoundedBox } from '@react-three/drei';
 import * as THREE from 'three';
 import { audio } from '../../services/audioEngine';
+
+// R3F Component Definitions
+const Group = 'group' as any;
+const Mesh = 'mesh' as any;
+const PlaneGeometry = 'planeGeometry' as any;
+const MeshStandardMaterial = 'meshStandardMaterial' as any;
+const MeshBasicMaterial = 'meshBasicMaterial' as any;
 
 // Create a 1x1 transparent placeholder texture to prevent "no image data" warnings
 const placeholderTexture = new THREE.DataTexture(new Uint8Array([0, 0, 0, 0]), 1, 1, THREE.RGBAFormat);
@@ -79,7 +85,7 @@ export function OrbitingTiles({ data, onSelect, highlightId }: TunnelStationsPro
   const angleStep = 1.2; 
 
   return (
-    <group>
+    <Group>
       {data.map((dapp, index) => {
         const angle = index * angleStep;
         const x = Math.cos(angle) * radius;
@@ -99,7 +105,7 @@ export function OrbitingTiles({ data, onSelect, highlightId }: TunnelStationsPro
           />
         );
       })}
-    </group>
+    </Group>
   );
 }
 
@@ -187,25 +193,25 @@ function PortalStation({ position, rotation, dapp, onSelect, isHighlighted }: an
   const frameColor = new THREE.Color(dapp.color);
 
   return (
-    <group ref={groupRef} position={position}>
+    <Group ref={groupRef} position={position}>
       {/* Volumetric Glow (Behind) */}
       <Billboard position={[0, 0, -1.0]}>
-        <mesh>
-            <planeGeometry args={[5, 5]} />
-            <meshBasicMaterial 
+        <Mesh>
+            <PlaneGeometry args={[5, 5]} />
+            <MeshBasicMaterial 
                 color={dapp.color} 
                 transparent 
                 opacity={0.1 + (hovered ? 0.15 : 0)} 
                 blending={THREE.AdditiveBlending}
                 depthWrite={false}
             >
-            </meshBasicMaterial>
-        </mesh>
+            </MeshBasicMaterial>
+        </Mesh>
       </Billboard>
 
       {/* Interactive Container */}
-      <group
-        onClick={(e) => {
+      <Group
+        onClick={(e: any) => {
             e.stopPropagation();
             onSelect(dapp);
         }}
@@ -222,7 +228,7 @@ function PortalStation({ position, rotation, dapp, onSelect, isHighlighted }: an
             radius={0.1} 
             smoothness={4}
           >
-            <meshStandardMaterial 
+            <MeshStandardMaterial 
                 color="#1a1a1a"
                 emissive={dapp.color}
                 emissiveIntensity={0.5}
@@ -232,8 +238,8 @@ function PortalStation({ position, rotation, dapp, onSelect, isHighlighted }: an
           </RoundedBox>
 
           {/* Portal Surface (Shader) */}
-          <mesh ref={portalRef} position={[0, 0, 0.21]}>
-            <planeGeometry args={[3.1, 3.1]} />
+          <Mesh ref={portalRef} position={[0, 0, 0.21]}>
+            <PlaneGeometry args={[3.1, 3.1]} />
             {/* @ts-ignore */}
             <portalMaterial 
                 ref={materialRef} 
@@ -241,11 +247,11 @@ function PortalStation({ position, rotation, dapp, onSelect, isHighlighted }: an
                 uColor={frameColor}
                 side={THREE.DoubleSide}
             />
-          </mesh>
-      </group>
+          </Mesh>
+      </Group>
 
       {/* Text Label (Floating below) */}
-      <group position={[0, -2.5, 0.2]}>
+      <Group position={[0, -2.5, 0.2]}>
         <Text
             fontSize={0.5}
             color="#fff"
@@ -264,7 +270,7 @@ function PortalStation({ position, rotation, dapp, onSelect, isHighlighted }: an
         >
             {dapp.tags}
         </Text>
-      </group>
-    </group>
+      </Group>
+    </Group>
   );
 }

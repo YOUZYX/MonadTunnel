@@ -1,4 +1,3 @@
-
 import React, { Suspense, useRef, useEffect } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { Stars, Environment, PerspectiveCamera } from '@react-three/drei';
@@ -23,6 +22,7 @@ interface TunnelSceneProps {
 
 const Fog = 'fog' as any;
 const AmbientLight = 'ambientLight' as any;
+const PointLight = 'pointLight' as any;
 const Group = 'group' as any;
 
 function CameraController({ minZ, warpActive, reverseWarp, customTargetZ }: { minZ: number, warpActive: boolean, reverseWarp?: boolean, customTargetZ: number | null }) {
@@ -214,7 +214,7 @@ export function TunnelScene({
 
       <Fog attach="fog" args={['#050011', 20, 150]} />
       <AmbientLight intensity={1.5} />
-      <pointLight position={[0, 0, 0]} intensity={2} distance={50} decay={2} color="#ffffff" />
+      <PointLight position={[0, 0, 0]} intensity={2} distance={50} decay={2} color="#ffffff" />
 
       <Suspense fallback={null}>
         <InfiniteStars />

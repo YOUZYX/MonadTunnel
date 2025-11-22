@@ -1,4 +1,3 @@
-
 import React, { useMemo, useRef } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { MeshDistortMaterial, Float } from '@react-three/drei';
@@ -8,6 +7,10 @@ import { createMonadShape } from '../Scene/MonadLogo';
 interface AppLogoProps {
   onClick?: () => void;
 }
+
+const Mesh = 'mesh' as any;
+const AmbientLight = 'ambientLight' as any;
+const PointLight = 'pointLight' as any;
 
 function LogoScene() {
   const meshRef = useRef<THREE.Mesh>(null);
@@ -39,7 +42,7 @@ function LogoScene() {
 
   return (
     <Float speed={2} rotationIntensity={0.2} floatIntensity={0.2}>
-      <mesh ref={meshRef} geometry={geometry} scale={1.4}>
+      <Mesh ref={meshRef} geometry={geometry} scale={1.4}>
         <MeshDistortMaterial
           color="#ffffff"
           emissive="#ffffff"
@@ -49,7 +52,7 @@ function LogoScene() {
           distort={0.2}
           speed={3}
         />
-      </mesh>
+      </Mesh>
     </Float>
   );
 }
@@ -86,9 +89,9 @@ export function AppLogo({ onClick }: AppLogoProps) {
          }} />
          
          <Canvas camera={{ position: [0, 0, 4], fov: 45 }} gl={{ alpha: true, antialias: true }}>
-            <ambientLight intensity={0.8} />
-            <pointLight position={[10, 10, 10]} intensity={2} />
-            <pointLight position={[-10, -10, -5]} intensity={1} color="#833ab4" />
+            <AmbientLight intensity={0.8} />
+            <PointLight position={[10, 10, 10]} intensity={2} />
+            <PointLight position={[-10, -10, -5]} intensity={1} color="#833ab4" />
             <LogoScene />
          </Canvas>
       </div>

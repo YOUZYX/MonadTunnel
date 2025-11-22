@@ -34,7 +34,7 @@ The project blends high-performance 3D graphics, generative AI, and spatial audi
 - **3D Engine**: [Three.js](https://threejs.org/), [@react-three/fiber](https://docs.pmnd.rs/react-three-fiber), [@react-three/drei](https://github.com/pmndrs/drei)
 - **AI**: [Google GenAI SDK](https://www.npmjs.com/package/@google/genai) (Gemini 2.5)
 - **Styling**: CSS Modules, Custom Shaders (GLSL)
-- **Audio**: Native Web Audio API (No external heavy audio libraries)
+- **Audio**: Native Web Audio API + Monad Portal Audio
 
 ---
 
@@ -42,7 +42,7 @@ The project blends high-performance 3D graphics, generative AI, and spatial audi
 
 ### 1. Clone the Repository
 ```bash
-git clone https://github.com/yourusername/monadtunnel.git
+git clone https://github.com/YOUZYX/MonadTunnel.git
 cd monadtunnel
 ```
 
@@ -56,14 +56,14 @@ Create a `.env` file in the root directory to configure the AI client. You must 
 
 ```env
 # .env
-API_KEY=your_google_gemini_api_key_here
+GEMINI_API_KEY=your_google_gemini_api_key_here
 ```
 
 ### 4. Run Development Server
 ```bash
 npm run dev
 ```
-Open `http://localhost:5173` in your browser.
+Open `http://localhost:3000` in your browser.
 
 ---
 
@@ -95,7 +95,7 @@ Open `http://localhost:5173` in your browser.
 │       ├── SearchInterface.tsx # AI & Manual Filter UI
 │       ├── DappPanel.tsx       # Details Modal
 │       └── SoundControl.tsx    # Audio UI
-├── data/
+├── public/data/
 │   └── MonEco.json      # Ecosystem Database
 ├── services/
 │   ├── aiClient.ts      # Gemini API Integration

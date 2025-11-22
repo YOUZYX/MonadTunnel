@@ -1,10 +1,15 @@
-
 import React, { useRef, useState, useMemo } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { Octahedron, MeshDistortMaterial } from '@react-three/drei';
 import * as THREE from 'three';
 import { createMonadShape } from './MonadLogo';
 import { audio } from '../../services/audioEngine';
+
+const Group = 'group' as any;
+const Mesh = 'mesh' as any;
+const MeshStandardMaterial = 'meshStandardMaterial' as any;
+const MeshBasicMaterial = 'meshBasicMaterial' as any;
+const RingGeometry = 'ringGeometry' as any;
 
 interface TimeTravelButtonProps {
   position: [number, number, number];
@@ -71,9 +76,9 @@ export function TimeTravelButton({ position, onClick, type = 'forward', targetZ,
   });
 
   return (
-    <group ref={groupRef} position={position} scale={scale}>
-      <group 
-        onClick={(e) => {
+    <Group ref={groupRef} position={position} scale={scale}>
+      <Group 
+        onClick={(e: any) => {
           e.stopPropagation();
           audio.playClick();
           onClick();
@@ -90,7 +95,7 @@ export function TimeTravelButton({ position, onClick, type = 'forward', targetZ,
       >
         {/* Outer Crystal Shell */}
         <Octahedron ref={outerRef} args={[1.2, 0]}>
-            <meshStandardMaterial 
+            <MeshStandardMaterial 
                 color={currentColor} 
                 wireframe 
                 emissive={currentColor}
@@ -101,7 +106,7 @@ export function TimeTravelButton({ position, onClick, type = 'forward', targetZ,
         </Octahedron>
 
         {/* Inner Monad Logo Core */}
-        <mesh ref={innerRef} geometry={monadGeometry}>
+        <Mesh ref={innerRef} geometry={monadGeometry}>
             <MeshDistortMaterial
                 color={currentColor}
                 emissive={currentColor}
@@ -109,14 +114,14 @@ export function TimeTravelButton({ position, onClick, type = 'forward', targetZ,
                 distort={0.2}
                 speed={3}
             />
-        </mesh>
+        </Mesh>
 
         {/* Platform effect */}
-        <mesh position={[0, -2, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-            <ringGeometry args={[1.5, 2, 32]} />
-            <meshBasicMaterial color={currentColor} transparent opacity={0.2} side={THREE.DoubleSide} />
-        </mesh>
-      </group>
-    </group>
+        <Mesh position={[0, -2, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+            <RingGeometry args={[1.5, 2, 32]} />
+            <MeshBasicMaterial color={currentColor} transparent opacity={0.2} side={THREE.DoubleSide} />
+        </Mesh>
+      </Group>
+    </Group>
   );
 }

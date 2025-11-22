@@ -15,6 +15,9 @@ const COLOR_PALETTE = [
     '#FFAE45', // Orange
 ]
 
+const Group = 'group' as any;
+const Mesh = 'mesh' as any;
+
 interface MonadLogoProps {
     position: [number, number, number]
     onClick: () => void
@@ -178,12 +181,12 @@ export function MonadLogoFill({ position, onClick }: MonadLogoProps) {
     })
 
     return (
-        <group position={position}>
-            <mesh
+        <Group position={position}>
+            <Mesh
                 ref={meshRef}
                 geometry={geometry}
                 material={material}
-                onClick={(e) => {
+                onClick={(e: any) => {
                     e.stopPropagation()
                     onClick()
                 }}
@@ -196,6 +199,6 @@ export function MonadLogoFill({ position, onClick }: MonadLogoProps) {
                     setHover(false)
                 }}
             />
-        </group>
+        </Group>
     )
 }

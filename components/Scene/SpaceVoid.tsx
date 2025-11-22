@@ -1,4 +1,3 @@
-
 import React, { useRef, useState, useEffect, useMemo, memo } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { Stars, Float, Text, OrbitControls, RoundedBox, PerspectiveCamera } from '@react-three/drei';
@@ -9,6 +8,10 @@ const Group = 'group' as any;
 const Mesh = 'mesh' as any;
 const PlaneGeometry = 'planeGeometry' as any;
 const MeshBasicMaterial = 'meshBasicMaterial' as any;
+const MeshStandardMaterial = 'meshStandardMaterial' as any;
+const OctahedronGeometry = 'octahedronGeometry' as any;
+const AmbientLight = 'ambientLight' as any;
+const PointLight = 'pointLight' as any;
 
 interface SpaceVoidProps {
   data: any[];
@@ -76,20 +79,20 @@ function Explosion({ position, color, onComplete }: any) {
   if (!active) return null;
 
   return (
-    <group ref={groupRef} position={position}>
+    <Group ref={groupRef} position={position}>
        {particles.map((p, i) => (
-          <mesh 
+          <Mesh 
             key={i} 
             position={[0,0,0]} 
             rotation={p.rotation} 
             scale={p.scale}
-            ref={(el) => { if (el) meshesRef.current[i] = el; }}
+            ref={(el: any) => { if (el) meshesRef.current[i] = el; }}
           >
-             <octahedronGeometry args={[1, 0]} />
-             <meshBasicMaterial color={color} transparent opacity={0.8} />
-          </mesh>
+             <OctahedronGeometry args={[1, 0]} />
+             <MeshBasicMaterial color={color} transparent opacity={0.8} />
+          </Mesh>
        ))}
-    </group>
+    </Group>
   );
 }
 
@@ -171,7 +174,7 @@ const ConstellationNode = memo(({ dapp, position, onSelect, isVisible }: any) =>
                         scale={[0.01, 0.01, 0.01]} 
                     >
                         <RoundedBox args={[2.5, 2.5, 0.2]} radius={0.1} smoothness={4}>
-                            <meshStandardMaterial 
+                            <MeshStandardMaterial 
                                 color="#111" 
                                 emissive={dapp.color} 
                                 emissiveIntensity={hovered ? 0.8 : 0.3}
@@ -265,7 +268,7 @@ export function SpaceVoid({ data, onSelectDapp, onBack }: SpaceVoidProps) {
         }}>
             <input
                 type="text"
-                placeholder="Filter Void..."
+                placeholder="Search Ecosystem ..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 style={{
@@ -308,8 +311,8 @@ export function SpaceVoid({ data, onSelectDapp, onBack }: SpaceVoidProps) {
 
             <OrbitControls autoRotate={!searchQuery} autoRotateSpeed={0.5} enableZoom={true} minDistance={10} maxDistance={60} />
             
-            <ambientLight intensity={0.5} />
-            <pointLight position={[10, 10, 10]} intensity={1} />
+            <AmbientLight intensity={0.5} />
+            <PointLight position={[10, 10, 10]} intensity={1} />
 
             <Group>
                 {processedNodes.map((node) => (

@@ -1,8 +1,14 @@
-
 import React, { useRef, useState, useEffect, useMemo } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { Text } from '@react-three/drei';
 import * as THREE from 'three';
+
+const Group = 'group' as any;
+const Points = 'points' as any;
+const BufferGeometry = 'bufferGeometry' as any;
+const BufferAttribute = 'bufferAttribute' as any;
+const PointsMaterial = 'pointsMaterial' as any;
+const MeshBasicMaterial = 'meshBasicMaterial' as any;
 
 export function PurpleStarField() {
   const groupRef = useRef<any>(null);
@@ -34,17 +40,17 @@ export function PurpleStarField() {
   })
 
   return (
-      <group ref={groupRef}>
-          <points>
-            <bufferGeometry>
-                <bufferAttribute
+      <Group ref={groupRef}>
+          <Points>
+            <BufferGeometry>
+                <BufferAttribute
                     attach="attributes-position"
                     count={positions.length / 3}
                     array={positions}
                     itemSize={3}
                 />
-            </bufferGeometry>
-            <pointsMaterial 
+            </BufferGeometry>
+            <PointsMaterial 
                 color="#a855f7" 
                 size={0.4} 
                 transparent 
@@ -53,8 +59,8 @@ export function PurpleStarField() {
                 depthWrite={false} 
                 blending={THREE.AdditiveBlending}
             />
-          </points>
-      </group>
+          </Points>
+      </Group>
   )
 }
 
@@ -80,7 +86,7 @@ export function TypewriterText({ text }: { text: string }) {
     });
 
     return (
-        <group ref={meshRef} position={[0, 0, 0]}>
+        <Group ref={meshRef} position={[0, 0, 0]}>
              <Text
                 fontSize={1.5}
                 color="white"
@@ -95,20 +101,20 @@ export function TypewriterText({ text }: { text: string }) {
                 characters="abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.,!? "
             >
                 {displayed}
-                <meshBasicMaterial color="white" toneMapped={false} />
+                <MeshBasicMaterial color="white" toneMapped={false} />
             </Text>
-        </group>
+        </Group>
     )
 }
 
 export function NotFoundEffect() {
     return (
-        <group>
+        <Group>
             <PurpleStarField />
-            <group position={[0, 0, 25]}>
+            <Group position={[0, 0, 25]}>
                 {/* Push text closer to camera (camera is at z=35 in SpaceVoid) */}
                 <TypewriterText text="Scan complete. No DApps match your Search." />
-            </group>
-        </group>
+            </Group>
+        </Group>
     );
 }
