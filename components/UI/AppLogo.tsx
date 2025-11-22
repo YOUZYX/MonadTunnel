@@ -1,3 +1,4 @@
+
 import React, { useMemo, useRef } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { MeshDistortMaterial, Float } from '@react-three/drei';
@@ -64,8 +65,8 @@ export function AppLogo({ onClick }: AppLogoProps) {
       onClick={onClick}
       style={{ 
         position: 'absolute', 
-        top: '50px', 
-        left: '50px', 
+        top: '10px', 
+        left: '10px', 
         zIndex: 50,
         display: 'flex',
         alignItems: 'center',
@@ -109,7 +110,7 @@ export function AppLogo({ onClick }: AppLogoProps) {
         </span>
         <span style={{ 
             fontFamily: 'inter, sans-serif',
-            fontSize: '1.2rem', 
+            fontSize: '1.1rem', 
             color: '#AA99BC',
             textShadow: '0 0 10px rgba(131, 58, 180, 0.6)',
             letterSpacing: '1px'

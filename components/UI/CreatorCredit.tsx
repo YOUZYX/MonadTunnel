@@ -6,7 +6,9 @@ const youzyPfp = "https://avatars.githubusercontent.com/u/80650550?v=4";
 
 export function CreatorCredit() {
   return (
-    <div style={{
+    <div 
+    className="creator-credit-container"
+    style={{
       position: 'absolute',
       bottom: '20px',
       left: '20px',

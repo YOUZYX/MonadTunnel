@@ -10,17 +10,23 @@ interface DappPanelProps {
 export function DappPanel({ dapp, onClose }: DappPanelProps) {
   const [tilt, setTilt] = useState({ x: 0, y: 0 });
   const panelRef = useRef<HTMLDivElement>(null);
+  const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
     if (dapp) {
       audio.playOpen();
     }
+    setIsMobile(window.innerWidth < 768);
+    
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
   }, [dapp]);
 
   if (!dapp) return null;
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!panelRef.current) return;
+    if (!panelRef.current || isMobile) return;
     
     const rect = panelRef.current.getBoundingClientRect();
     
@@ -56,7 +62,7 @@ export function DappPanel({ dapp, onClose }: DappPanelProps) {
     >
         <div 
             ref={panelRef}
-            className="dapp-panel-scroll"
+            className="dapp-panel-scroll dapp-panel-container"
             onMouseMove={handleMouseMove}
             onMouseLeave={handleMouseLeave}
             style={{
@@ -77,7 +83,7 @@ export function DappPanel({ dapp, onClose }: DappPanelProps) {
                     0 0 40px ${dapp.color}40,
                     inset 0 0 20px rgba(255, 255, 255, 0.05)
                 `,
-                transform: `perspective(1000px) rotateX(${tilt.x}deg) rotateY(${tilt.y}deg)`,
+                transform: isMobile ? 'none' : `perspective(1000px) rotateX(${tilt.x}deg) rotateY(${tilt.y}deg)`,
                 transition: 'transform 0.1s ease-out, box-shadow 0.3s ease',
                 pointerEvents: 'auto',
                 position: 'relative'
@@ -104,8 +110,10 @@ export function DappPanel({ dapp, onClose }: DappPanelProps) {
                     transition: 'background 0.2s'
                 }}
                 onMouseEnter={(e) => {
-                    audio.playHover();
-                    e.currentTarget.style.background = 'rgba(255,255,255,0.2)';
+                    if(!isMobile) {
+                        audio.playHover();
+                        e.currentTarget.style.background = 'rgba(255,255,255,0.2)';
+                    }
                 }}
                 onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.1)'}
             >
@@ -247,9 +255,11 @@ export function DappPanel({ dapp, onClose }: DappPanelProps) {
                         gap: '8px'
                     }}
                     onMouseEnter={(e) => {
-                        audio.playHover();
-                        e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)';
-                        e.currentTarget.style.transform = 'translateY(-2px)';
+                        if(!isMobile) {
+                            audio.playHover();
+                            e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)';
+                            e.currentTarget.style.transform = 'translateY(-2px)';
+                        }
                     }}
                     onMouseLeave={(e) => {
                         e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)';
@@ -299,10 +309,12 @@ export function DappPanel({ dapp, onClose }: DappPanelProps) {
                         gap: '8px'
                     }}
                     onMouseEnter={(e) => {
-                        audio.playHover();
-                        e.currentTarget.style.filter = 'brightness(1.1)';
-                        e.currentTarget.style.transform = 'translateY(-2px)';
-                        e.currentTarget.style.boxShadow = `0 8px 25px ${dapp.color}60`;
+                        if(!isMobile) {
+                            audio.playHover();
+                            e.currentTarget.style.filter = 'brightness(1.1)';
+                            e.currentTarget.style.transform = 'translateY(-2px)';
+                            e.currentTarget.style.boxShadow = `0 8px 25px ${dapp.color}60`;
+                        }
                     }}
                     onMouseLeave={(e) => {
                         e.currentTarget.style.filter = 'brightness(1)';

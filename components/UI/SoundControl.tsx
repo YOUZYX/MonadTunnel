@@ -30,6 +30,7 @@ export function SoundControl() {
 
   return (
     <div 
+      className="sound-control-container"
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       style={{

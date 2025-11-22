@@ -5,6 +5,10 @@ body {
   background: #000;
   overflow: hidden;
   font-family: 'Courier New', Courier, monospace;
+  touch-action: none; /* Prevents browser zoom/scroll on mobile */
+  -webkit-user-select: none;
+  user-select: none;
+  overscroll-behavior: none;
 }
 
 * {
@@ -94,6 +98,56 @@ body {
 .no-scrollbar {
   -ms-overflow-style: none;
   scrollbar-width: none;
+}
+
+/* Transparent Custom Scrollbar for Modals */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.15);
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(255, 255, 255, 0.3);
+}
+
+/* Seamless Glass Scrollbar for Textareas/Inputs */
+.glass-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.15) transparent;
+}
+
+.glass-scrollbar::-webkit-scrollbar {
+  width: 8px;
+}
+
+.glass-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.glass-scrollbar::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.15);
+  border-radius: 20px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+
+.glass-scrollbar::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(255, 255, 255, 0.3);
+}
+
+/* Mobile specific touch scrolling optimization */
+.search-mobile-scroll {
+  -webkit-overflow-scrolling: touch; /* Smooth momentum scrolling on iOS */
 }
 
 /* Custom Dapp Panel Scrollbar */
@@ -197,4 +251,121 @@ body {
 .portal-btn:hover .portal-label {
   color: #fff;
   text-shadow: 0 0 8px #836EF9;
+}
+
+/* --- Responsive Logic --- */
+
+/* --- Responsive Logic --- */
+
+.app-logo-container {
+  transform-origin: top left;
+  margin-left: 15px;
+  margin-top: 15px;
+  
+}
+
+/* Mobile view adjustments */
+@media (max-width: 768px) {
+  .app-logo-container {
+    gap: 6px !important; /* Reduce gap between logo and text */
+    padding-top: 0%;
+    margin-left: 0%;
+    margin-top: 0%;
+  }
+  
+  .logo-icon-wrapper {
+    width: 52px !important; /* Slightly smaller logo on mobile */
+    height: 52px !important;
+    margin-top: 10px;
+  }
+  
+  /* Target the text container to align it better */
+  .app-logo-container > div:last-child {
+    line-height: 0.8 !important; /* Tighter line height */
+  }
+  
+  /* Adjust font sizes for mobile */
+  .app-logo-container > div:last-child span:first-child {
+    font-size: 1.5rem !important; /* MONAD text */
+    margin-bottom: 2px;
+    margin-top: 0%;
+  }
+  
+  .app-logo-container > div:last-child span:last-child {
+    font-size: 0.95rem !important; /* TUNNEL text */
+  }
+}
+/* --- test --- */
+
+.creator-credit-container {
+  transform-origin: bottom left;
+}
+
+.sound-control-container {
+  transform-origin: bottom right;
+}
+
+@media (max-width: 768px) {
+  /* Scale down UI on mobile */
+  .app-logo-container {
+    transform: scale(0.8);
+    top: 20px !important;
+    left: 20px !important;
+  }
+  
+  .creator-credit-container {
+    transform: scale(0.85);
+    bottom: 15px !important;
+    left: 15px !important;
+  }
+
+  .sound-control-container {
+    transform: scale(0.85);
+    bottom: 15px !important;
+    right: 15px !important;
+  }
+
+  /* Portal Button */
+  .portal-btn {
+    width: 70px;
+    height: 70px;
+    top: 20px;
+    right: 20px;
+  }
+  .portal-btn .portal-label {
+    font-size: 0.5rem;
+  }
+
+  /* Panels */
+  .dapp-panel-scroll {
+    max-height: 100vh !important;
+    border-radius: 0 !important;
+    border-left: none !important;
+    border-right: none !important;
+    padding: 80px 25px 100px 25px !important; /* Add padding for close button and bottom nav */
+  }
+
+  .dapp-panel-container {
+    width: 100% !important;
+    max-width: 100% !important;
+    border-radius: 0 !important;
+  }
+
+  /* Search UI Specifics */
+  .search-interface-container {
+    perspective: none !important; 
+    /* Center content safely on mobile */
+    padding: 20px !important;
+    box-sizing: border-box !important;
+  }
+
+  .ai-panel > div, .manual-panel > div {
+    width: 100% !important;
+    height: auto !important;
+    min-height: 0 !important; /* Allow shrinking */
+    max-height: 80vh; /* Prevent overflow of screen */
+    padding: 30px 20px !important;
+    overflow-y: auto;
+    border-radius: 24px !important;
+  }
 }

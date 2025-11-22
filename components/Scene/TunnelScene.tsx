@@ -1,3 +1,4 @@
+
 import React, { Suspense, useRef, useEffect } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { Stars, Environment, PerspectiveCamera } from '@react-three/drei';
@@ -10,6 +11,7 @@ import { audio } from '../../services/audioEngine';
 
 interface TunnelSceneProps {
   data: any[];
+  isMobile: boolean;
   onSelectDapp: (dapp: any) => void;
   highlightId: string | null;
   onLogoClick: () => void;
@@ -53,6 +55,7 @@ function CameraController({ minZ, warpActive, reverseWarp, customTargetZ }: { mi
   useEffect(() => {
     const handleWheel = (e: WheelEvent) => {
         if (warpActive) return; 
+        // Wheel Down (positive delta) -> Move forward (negative Z)
         targetScrollPos.current -= e.deltaY * 0.05;
         if (Math.abs(e.deltaY) > 5) { // Only play for significant movements
             playScrollSound();
@@ -72,12 +75,43 @@ function CameraController({ minZ, warpActive, reverseWarp, customTargetZ }: { mi
       }
     };
 
+    // --- Touch Handling for Mobile ---
+    let touchStartY = 0;
+    const handleTouchStart = (e: TouchEvent) => {
+        if (e.touches.length === 1) {
+            touchStartY = e.touches[0].clientY;
+        }
+    };
+
+    const handleTouchMove = (e: TouchEvent) => {
+        if (warpActive || e.touches.length !== 1) return;
+        
+        const touchY = e.touches[0].clientY;
+        const deltaY = touchY - touchStartY;
+        touchStartY = touchY; // Reset for continuous tracking
+
+        // Logic:
+        // Swipe Up (finger moves up, Y decreases, deltaY negative) -> Move Forward (deeper, negative Z)
+        // Swipe Down (finger moves down, Y increases, deltaY positive) -> Move Backward (start, positive Z)
+        
+        const sensitivity = 2.0; // Smooth mobile feel
+        targetScrollPos.current += deltaY * sensitivity;
+
+        if (Math.abs(deltaY) > 2) {
+            playScrollSound();
+        }
+    };
+
     window.addEventListener('wheel', handleWheel);
     window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('touchstart', handleTouchStart);
+    window.addEventListener('touchmove', handleTouchMove);
 
     return () => {
       window.removeEventListener('wheel', handleWheel);
       window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('touchstart', handleTouchStart);
+      window.removeEventListener('touchmove', handleTouchMove);
     };
   }, [warpActive]);
 
@@ -94,7 +128,7 @@ function CameraController({ minZ, warpActive, reverseWarp, customTargetZ }: { mi
         }
     } else {
         // Normal Clamp Logic
-        const limitBuffer = 30; 
+        const limitBuffer = 50; 
         if (targetScrollPos.current < minZ + limitBuffer) {
             targetScrollPos.current = minZ + limitBuffer;
         }
@@ -158,7 +192,9 @@ function ReverseButtonHud({ onClick, targetZ }: { onClick: () => void, targetZ: 
   const visibleHeight = 2 * Math.tan(vFOV / 2) * depth;
   const visibleWidth = visibleHeight * (size.width / size.height);
   
-  const pixelPadding = 85; 
+  const isMobile = size.width < 768;
+  const pixelPadding = isMobile ? 35 : 85; 
+  
   const worldPaddingY = (pixelPadding / size.height) * visibleHeight;
   const worldPaddingX = (pixelPadding / size.width) * visibleWidth;
 
@@ -168,7 +204,7 @@ function ReverseButtonHud({ onClick, targetZ }: { onClick: () => void, targetZ: 
   return (
     <TimeTravelButton 
         position={[x, y, -depth]} 
-        scale={0.14}
+        scale={isMobile ? 0.1 : 0.14}
         onClick={onClick} 
         type="reverse"
         targetZ={targetZ}
@@ -178,6 +214,7 @@ function ReverseButtonHud({ onClick, targetZ }: { onClick: () => void, targetZ: 
 
 export function TunnelScene({ 
   data, 
+  isMobile,
   onSelectDapp, 
   highlightId, 
   onLogoClick, 
@@ -187,10 +224,13 @@ export function TunnelScene({
   onTimeTravelStart,
   onTimeTravelReset
 }: TunnelSceneProps) {
-  const zSpacing = 15;
+  // Dynamic spacing to match OrbitingTiles mobile logic and prevent logo overlap
+  const zSpacing = isMobile ? 22 : 15; 
   const itemsLength = data.length * zSpacing;
   const tunnelLength = Math.max(1000, itemsLength + 300);
-  const logoPosition: [number, number, number] = [0, 0, -itemsLength - 50];
+  
+  // Position logo safely after the last item
+  const logoPosition: [number, number, number] = [0, 0, -itemsLength - 60];
   
   return (
     <Canvas 
@@ -222,7 +262,12 @@ export function TunnelScene({
         {/* Always render tunnel to allow visual warp effect */}
         <HyperTunnel length={tunnelLength} />
 
-        <OrbitingTiles data={data} onSelect={onSelectDapp} highlightId={highlightId} />
+        <OrbitingTiles 
+            data={data} 
+            isMobile={isMobile} 
+            onSelect={onSelectDapp} 
+            highlightId={highlightId} 
+        />
         
         {/* Start Time Travel Button (Forward) - World Space */}
         <TimeTravelButton 

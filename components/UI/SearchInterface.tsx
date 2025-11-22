@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { getAiRecommendation } from '../../services/aiClient';
@@ -48,12 +49,12 @@ const FilterIcon = ({ active }: { active: boolean }) => (
 // --- Components ---
 
 // 1. 3D Tilt Container
-const TiltCard = ({ children, className }: { children: React.ReactNode, className?: string }) => {
+const TiltCard = ({ children, className, isMobile }: { children?: React.ReactNode, className?: string, isMobile: boolean }) => {
     const panelRef = useRef<HTMLDivElement>(null);
     const [tilt, setTilt] = useState({ x: 0, y: 0 });
 
     const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-        if (!panelRef.current) return;
+        if (!panelRef.current || isMobile) return;
         const rect = panelRef.current.getBoundingClientRect();
         const x = e.clientX - (rect.left + rect.width / 2);
         const y = e.clientY - (rect.top + rect.height / 2);
@@ -74,9 +75,12 @@ const TiltCard = ({ children, className }: { children: React.ReactNode, classNam
             onMouseLeave={handleMouseLeave}
             className={className}
             style={{
-                transform: `perspective(1500px) rotateX(${tilt.x}deg) rotateY(${tilt.y}deg)`,
+                transform: isMobile ? 'none' : `perspective(1500px) rotateX(${tilt.x}deg) rotateY(${tilt.y}deg)`,
                 transition: 'transform 0.2s ease-out',
                 transformStyle: 'preserve-3d',
+                width: isMobile ? '100%' : 'auto', // Ensure full width in flex container on mobile
+                display: 'flex',
+                justifyContent: 'center'
             }}
         >
             {children}
@@ -85,7 +89,7 @@ const TiltCard = ({ children, className }: { children: React.ReactNode, classNam
 };
 
 // 2. Liquid Switch with Icons
-const ModeSwitch = ({ mode, setMode }: { mode: 'AI' | 'MANUAL', setMode: (m: 'AI' | 'MANUAL') => void }) => {
+const ModeSwitch = ({ mode, setMode, isMobile }: { mode: 'AI' | 'MANUAL', setMode: (m: 'AI' | 'MANUAL') => void, isMobile: boolean }) => {
     const [isHovered, setIsHovered] = useState(false);
     
     const toggle = () => {
@@ -93,11 +97,18 @@ const ModeSwitch = ({ mode, setMode }: { mode: 'AI' | 'MANUAL', setMode: (m: 'AI
         setMode(mode === 'AI' ? 'MANUAL' : 'AI');
     }
 
+    // Responsive sizing logic
+    const width = isMobile ? 280 : 320;
+    const height = isMobile ? 56 : 64;
+    const thumbWidth = (width / 2) - 4;
+    const thumbHeight = height - 10;
+    const leftPos = mode === 'AI' ? 4 : (width / 2);
+
     return (
         <div 
             style={{
-                width: '320px',
-                height: '64px',
+                width: `${width}px`,
+                height: `${height}px`,
                 background: 'rgba(131, 110, 249, 0.05)',
                 borderRadius: '32px',
                 border: `1px solid ${THEME_COLOR}40`,
@@ -109,13 +120,14 @@ const ModeSwitch = ({ mode, setMode }: { mode: 'AI' | 'MANUAL', setMode: (m: 'AI
                 cursor: 'pointer',
                 boxShadow: `0 0 30px ${THEME_COLOR}20, inset 0 0 20px rgba(0,0,0,0.5)`,
                 backdropFilter: 'blur(16px)',
-                marginBottom: '40px',
+                marginBottom: '30px',
                 userSelect: 'none',
-                transition: 'all 0.3s ease'
+                transition: 'all 0.3s ease',
+                flexShrink: 0
             }}
             onMouseEnter={() => {
                 setIsHovered(true);
-                audio.playHover();
+                if(!isMobile) audio.playHover();
             }}
             onMouseLeave={() => setIsHovered(false)}
             onClick={toggle}
@@ -124,9 +136,9 @@ const ModeSwitch = ({ mode, setMode }: { mode: 'AI' | 'MANUAL', setMode: (m: 'AI
             <div 
                 style={{
                     position: 'absolute',
-                    left: mode === 'AI' ? '4px' : '160px',
-                    width: '156px',
-                    height: '54px',
+                    left: `${leftPos}px`,
+                    width: `${thumbWidth}px`,
+                    height: `${thumbHeight}px`,
                     borderRadius: '28px',
                     background: THEME_COLOR,
                     boxShadow: `0 0 25px ${THEME_COLOR}, inset 0 2px 10px rgba(255,255,255,0.4)`,
@@ -142,10 +154,10 @@ const ModeSwitch = ({ mode, setMode }: { mode: 'AI' | 'MANUAL', setMode: (m: 'AI
                 display: 'flex', 
                 alignItems: 'center', 
                 justifyContent: 'center', 
-                gap: '10px',
+                gap: '8px',
                 color: mode === 'AI' ? '#fff' : 'rgba(255,255,255,0.4)', 
                 fontWeight: '800', 
-                fontSize: '0.9rem',
+                fontSize: isMobile ? '0.8rem' : '0.9rem',
                 letterSpacing: '1px',
                 transition: 'color 0.3s' 
             }}>
@@ -160,10 +172,10 @@ const ModeSwitch = ({ mode, setMode }: { mode: 'AI' | 'MANUAL', setMode: (m: 'AI
                 display: 'flex', 
                 alignItems: 'center', 
                 justifyContent: 'center', 
-                gap: '10px',
+                gap: '8px',
                 color: mode === 'MANUAL' ? '#fff' : 'rgba(255,255,255,0.4)', 
                 fontWeight: '800', 
-                fontSize: '0.9rem',
+                fontSize: isMobile ? '0.8rem' : '0.9rem',
                 letterSpacing: '1px',
                 transition: 'color 0.3s' 
             }}>
@@ -238,6 +250,7 @@ const Button3D = ({ onClick, children, primary = false, disabled = false }: any)
 
 export function SearchInterface({ data, onSearch, onClose }: SearchInterfaceProps) {
   const [mode, setMode] = useState<'AI' | 'MANUAL'>('AI');
+  const [isMobile, setIsMobile] = useState(false);
 
   // -- AI State --
   const [query, setQuery] = useState('');
@@ -249,6 +262,13 @@ export function SearchInterface({ data, onSearch, onClose }: SearchInterfaceProp
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [monadOnly, setMonadOnly] = useState(false);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   // -- Filter Logic --
   const visibleTags = useMemo(() => {
@@ -315,10 +335,10 @@ export function SearchInterface({ data, onSearch, onClose }: SearchInterfaceProp
   };
 
   return (
-    <div style={{
-        position: 'absolute',
-        top: 0, left: 0, width: '100vw', height: '100vh',
-        background: 'rgba(5, 3, 15, 0.7)', // Darker, cleaner background
+    <div className="search-interface-container" style={{
+        position: 'fixed', // Use fixed for better overlay support on mobile
+        inset: 0, // Replaces top/left/width/height 100%
+        background: 'rgba(5, 3, 15, 0.7)', 
         backdropFilter: 'blur(20px)',
         WebkitBackdropFilter: 'blur(20px)',
         zIndex: 100,
@@ -327,15 +347,16 @@ export function SearchInterface({ data, onSearch, onClose }: SearchInterfaceProp
         alignItems: 'center',
         justifyContent: 'center',
         fontFamily: "'Inter', sans-serif",
-        perspective: '1500px'
+        perspective: '1500px',
+        overflow: 'hidden' // Container shouldn't scroll, inner panels should
     }}>
         
         {/* Floating Close Button */}
         <div 
             onClick={onClose}
             style={{
-                position: 'absolute', top: '40px', right: '40px',
-                width: '56px', height: '56px',
+                position: 'absolute', top: isMobile ? '20px' : '40px', right: isMobile ? '20px' : '40px',
+                width: isMobile ? '48px' : '56px', height: isMobile ? '48px' : '56px',
                 background: 'rgba(131, 110, 249, 0.1)',
                 borderRadius: '50%',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -348,10 +369,12 @@ export function SearchInterface({ data, onSearch, onClose }: SearchInterfaceProp
                 boxShadow: `0 0 15px ${THEME_COLOR}20`
             }}
             onMouseEnter={e => { 
-                audio.playHover();
-                e.currentTarget.style.background = THEME_COLOR; 
-                e.currentTarget.style.transform = 'scale(1.1) rotate(90deg)'; 
-                e.currentTarget.style.boxShadow = `0 0 30px ${THEME_COLOR}`;
+                if(!isMobile) {
+                    audio.playHover();
+                    e.currentTarget.style.background = THEME_COLOR; 
+                    e.currentTarget.style.transform = 'scale(1.1) rotate(90deg)'; 
+                    e.currentTarget.style.boxShadow = `0 0 30px ${THEME_COLOR}`;
+                }
             }}
             onMouseLeave={e => { 
                 e.currentTarget.style.background = 'rgba(131, 110, 249, 0.1)'; 
@@ -363,20 +386,20 @@ export function SearchInterface({ data, onSearch, onClose }: SearchInterfaceProp
         </div>
 
         {/* Mode Switcher */}
-        <ModeSwitch mode={mode} setMode={setMode} />
+        <ModeSwitch mode={mode} setMode={setMode} isMobile={isMobile} />
 
         {/* --- AI PANEL --- */}
         {mode === 'AI' && (
-            <TiltCard className="ai-panel" >
-                <div style={{
+            <TiltCard className="ai-panel" isMobile={isMobile}>
+                <div className="custom-scrollbar" style={{
                     width: '620px',
+                    maxWidth: '90%', // Responsive base
                     minHeight: '520px',
-                    // Liquid Glass Background
                     background: 'rgba(20, 20, 35, 0.6)',
                     borderRadius: '32px',
                     border: `1px solid ${THEME_COLOR}40`,
                     boxShadow: `0 25px 80px -10px rgba(0,0,0,0.6), inset 0 0 60px rgba(131, 110, 249, 0.05)`,
-                    padding: '45px',
+                    padding: isMobile ? '30px 25px' : '45px',
                     display: 'flex',
                     flexDirection: 'column',
                     alignItems: 'center',
@@ -386,13 +409,14 @@ export function SearchInterface({ data, onSearch, onClose }: SearchInterfaceProp
                 }}>
                     <h2 style={{ 
                         color: '#fff', 
-                        fontSize: '2.2rem', 
+                        fontSize: isMobile ? '1.8rem' : '2.2rem', 
                         fontWeight: '800',
                         margin: '0 0 12px 0', 
                         textTransform: 'uppercase', 
                         textShadow: `0 0 20px ${THEME_COLOR}`,
-                        transform: 'translateZ(30px)',
-                        letterSpacing: '2px'
+                        transform: isMobile ? 'none' : 'translateZ(30px)',
+                        letterSpacing: '2px',
+                        textAlign: 'center'
                     }}>
                         Monad Oracle
                     </h2>
@@ -400,15 +424,15 @@ export function SearchInterface({ data, onSearch, onClose }: SearchInterfaceProp
                         color: 'rgba(255,255,255,0.7)', 
                         textAlign: 'center', 
                         marginBottom: '35px', 
-                        transform: 'translateZ(15px)',
-                        fontSize: '1.05rem',
+                        transform: isMobile ? 'none' : 'translateZ(15px)',
+                        fontSize: isMobile ? '0.95rem' : '1.05rem',
                         lineHeight: '1.5'
                     }}>
-                        The Oracle listens. Describe your intent to reveal the path.
+                        //The Oracle listens. Describe your intent to reveal the path.
                     </p>
 
                     {isAiLoading ? (
-                         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', transform: 'translateZ(40px)' }}>
+                         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', transform: isMobile ? 'none' : 'translateZ(40px)' }}>
                             <div style={{ width: '240px', height: '240px' }}>
                                 <Canvas camera={{ position: [0, 0, 4] }} gl={{ alpha: true }}>
                                     <AmbientLight intensity={1} />
@@ -424,24 +448,26 @@ export function SearchInterface({ data, onSearch, onClose }: SearchInterfaceProp
                                 fontWeight: 'bold',
                                 letterSpacing: '3px', 
                                 animation: 'pulse 1.5s infinite ease-in-out',
-                                textShadow: `0 0 15px ${THEME_COLOR}`
+                                textShadow: `0 0 15px ${THEME_COLOR}`,
+                                textAlign: 'center'
                             }}>
-                                {oracleMessage}
+                                //{oracleMessage}
                             </div>
                         </div>
                     ) : (
-                        <form onSubmit={handleAiSubmit} style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '25px', flex: 1, transform: 'translateZ(25px)' }}>
+                        <form onSubmit={handleAiSubmit} style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '25px', flex: 1, transform: isMobile ? 'none' : 'translateZ(25px)' }}>
                              <textarea
+                                className="glass-scrollbar"
                                 value={query}
                                 onChange={(e) => setQuery(e.target.value)}
                                 placeholder="ASK THE MONAD ORACLE (e.g., 'Where I can Trade with low fees ?' or 'I want to Play games')"
                                 style={{
                                     background: 'rgba(0,0,0,0.3)',
-                                    border: '1px solid rgba(131, 110, 249, 1)',
+                                    border: '1px solid rgba(255,255,255,0.1)',
                                     borderRadius: '20px',
                                     padding: '24px',
                                     color: 'white',
-                                    fontSize: '1.2rem',
+                                    fontSize: isMobile ? '1rem' : '1.2rem',
                                     flex: 1,
                                     resize: 'none',
                                     outline: 'none',
@@ -450,7 +476,7 @@ export function SearchInterface({ data, onSearch, onClose }: SearchInterfaceProp
                                     transition: 'border 0.3s'
                                 }}
                                 onFocus={(e) => {
-                                    audio.playHover();
+                                    if(!isMobile) audio.playHover();
                                     e.target.style.border = `1px solid ${THEME_COLOR}`;
                                 }}
                                 onBlur={(e) => e.target.style.border = '1px solid rgba(255,255,255,0.1)'}
@@ -464,23 +490,26 @@ export function SearchInterface({ data, onSearch, onClose }: SearchInterfaceProp
 
         {/* --- MANUAL PANEL --- */}
         {mode === 'MANUAL' && (
-            <TiltCard className="manual-panel">
-                <div style={{
+            <TiltCard className="manual-panel" isMobile={isMobile}>
+                <div className="custom-scrollbar" style={{
                     width: '720px',
+                    maxWidth: '90%', 
                     minHeight: '580px',
                     background: 'rgba(20, 20, 35, 0.6)',
                     borderRadius: '32px',
                     border: `1px solid ${THEME_COLOR}40`,
                     boxShadow: `0 25px 80px -10px rgba(0,0,0,0.6)`,
-                    padding: '45px',
+                    padding: isMobile ? '30px 25px' : '45px',
                     display: 'flex',
                     flexDirection: 'column',
                     position: 'relative',
                     transformStyle: 'preserve-3d',
                     backdropFilter: 'blur(24px)'
                 }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px', transform: 'translateZ(15px)' }}>
-                        <h2 style={{ color: 'white', fontSize: '2rem', margin: 0, fontWeight: '800', letterSpacing: '1px' }}>Manual Filter</h2>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px', transform: isMobile ? 'none' : 'translateZ(15px)' }}>
+                        <h2 style={{ color: 'white', fontSize: isMobile ? '1.5rem' : '2rem', margin: 0, fontWeight: '800', letterSpacing: '1px' }}>
+                            {isMobile ? 'Filter' : 'Manual Filter'}
+                        </h2>
                         <span style={{ 
                             background: matchCount === 0 ? '#ff003c' : 'rgba(255,255,255,0.1)',
                             color: 'white',
@@ -489,14 +518,15 @@ export function SearchInterface({ data, onSearch, onClose }: SearchInterfaceProp
                             fontSize: '0.95rem',
                             fontWeight: '700',
                             border: `1px solid ${matchCount === 0 ? '#ff003c' : 'rgba(255,255,255,0.2)'}`,
-                            boxShadow: matchCount === 0 ? '0 0 15px #ff003c' : 'none'
+                            boxShadow: matchCount === 0 ? '0 0 15px #ff003c' : 'none',
+                            whiteSpace: 'nowrap'
                         }}>
-                            {matchCount} NODES FOUND
+                            {matchCount} {isMobile ? 'FOUND' : 'NODES FOUND'}
                         </span>
                     </div>
 
                     {/* Categories */}
-                    <div style={{ display: 'flex', background: 'rgba(0,0,0,0.3)', borderRadius: '16px', padding: '6px', marginBottom: '30px', transform: 'translateZ(20px)' }}>
+                    <div style={{ display: 'flex', background: 'rgba(0,0,0,0.3)', borderRadius: '16px', padding: '6px', marginBottom: '30px', transform: isMobile ? 'none' : 'translateZ(20px)' }}>
                         {CATEGORIES.map(cat => (
                              <button
                                 key={cat}
@@ -506,7 +536,7 @@ export function SearchInterface({ data, onSearch, onClose }: SearchInterfaceProp
                                 }}
                                 style={{
                                     flex: 1,
-                                    padding: '14px',
+                                    padding: isMobile ? '10px' : '14px',
                                     background: activeCategory === cat ? 'rgba(255,255,255,0.1)' : 'transparent',
                                     color: activeCategory === cat ? 'white' : '#888',
                                     border: activeCategory === cat ? `1px solid ${THEME_COLOR}60` : '1px solid transparent',
@@ -516,9 +546,10 @@ export function SearchInterface({ data, onSearch, onClose }: SearchInterfaceProp
                                     transition: 'all 0.3s',
                                     textTransform: 'uppercase',
                                     letterSpacing: '1.5px',
+                                    fontSize: isMobile ? '0.9rem' : '1rem',
                                     boxShadow: activeCategory === cat ? `0 0 15px ${THEME_COLOR}20` : 'none'
                                 }}
-                                onMouseEnter={() => audio.playHover()}
+                                onMouseEnter={() => { if(!isMobile) audio.playHover() }}
                             >
                                 {cat}
                             </button>
@@ -526,26 +557,32 @@ export function SearchInterface({ data, onSearch, onClose }: SearchInterfaceProp
                     </div>
 
                     {/* Tag Carousel */}
-                    <div style={{ position: 'relative', marginBottom: '35px', transform: 'translateZ(25px)' }}>
-                        <button 
-                            onClick={() => scrollTags('left')}
-                            style={{
-                                position: 'absolute', left: -20, top: '50%', transform: 'translateY(-50%)',
-                                background: '#000', border: '1px solid #333', color: 'white',
-                                borderRadius: '50%', width: '36px', height: '36px', cursor: 'pointer', zIndex: 5,
-                                display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.2rem'
-                            }}
-                        >‹</button>
+                    <div style={{ position: 'relative', marginBottom: '35px', transform: isMobile ? 'none' : 'translateZ(25px)' }}>
+                        {!isMobile && (
+                            <button 
+                                onClick={() => scrollTags('left')}
+                                style={{
+                                    position: 'absolute', left: -20, top: '50%', transform: 'translateY(-50%)',
+                                    background: '#000', border: '1px solid #333', color: 'white',
+                                    borderRadius: '50%', width: '36px', height: '36px', cursor: 'pointer', zIndex: 5,
+                                    display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.2rem'
+                                }}
+                            >‹</button>
+                        )}
                          <div 
                             ref={scrollContainerRef}
-                            className="no-scrollbar"
+                            className="no-scrollbar search-mobile-scroll"
                             style={{
                                 display: 'flex',
                                 gap: '12px',
                                 overflowX: 'auto',
                                 padding: '5px 20px',
                                 scrollBehavior: 'smooth',
-                                maskImage: 'linear-gradient(to right, transparent, black 5%, black 95%, transparent)'
+                                maskImage: 'linear-gradient(to right, transparent, black 5%, black 95%, transparent)',
+                                marginLeft: isMobile ? '-20px' : '0',
+                                marginRight: isMobile ? '-20px' : '0',
+                                paddingLeft: isMobile ? '20px' : '20px',
+                                paddingRight: isMobile ? '20px' : '20px',
                             }}
                         >
                              {visibleTags.map(tag => {
@@ -570,24 +607,27 @@ export function SearchInterface({ data, onSearch, onClose }: SearchInterfaceProp
                                             fontSize: '0.9rem',
                                             fontWeight: '600',
                                             transition: 'all 0.2s',
-                                            boxShadow: isSelected ? `0 0 20px ${THEME_COLOR}60` : 'none'
+                                            boxShadow: isSelected ? `0 0 20px ${THEME_COLOR}60` : 'none',
+                                            flexShrink: 0
                                         }}
-                                        onMouseEnter={() => audio.playHover()}
+                                        onMouseEnter={() => { if(!isMobile) audio.playHover() }}
                                     >
                                         {tag}
                                     </button>
                                 );
                             })}
                         </div>
-                        <button 
-                            onClick={() => scrollTags('right')}
-                            style={{
-                                position: 'absolute', right: -20, top: '50%', transform: 'translateY(-50%)',
-                                background: '#000', border: '1px solid #333', color: 'white',
-                                borderRadius: '50%', width: '36px', height: '36px', cursor: 'pointer', zIndex: 5,
-                                display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.2rem'
-                            }}
-                        >›</button>
+                        {!isMobile && (
+                            <button 
+                                onClick={() => scrollTags('right')}
+                                style={{
+                                    position: 'absolute', right: -20, top: '50%', transform: 'translateY(-50%)',
+                                    background: '#000', border: '1px solid #333', color: 'white',
+                                    borderRadius: '50%', width: '36px', height: '36px', cursor: 'pointer', zIndex: 5,
+                                    display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.2rem'
+                                }}
+                            >›</button>
+                        )}
                     </div>
 
                     {/* Checkbox */}
@@ -596,14 +636,14 @@ export function SearchInterface({ data, onSearch, onClose }: SearchInterfaceProp
                             audio.playClick();
                             setMonadOnly(!monadOnly);
                         }}
-                        onMouseEnter={() => audio.playHover()}
+                        onMouseEnter={() => { if(!isMobile) audio.playHover() }}
                         style={{ 
                             display: 'flex', alignItems: 'center', gap: '14px', 
                             cursor: 'pointer', marginBottom: 'auto',
                             padding: '14px 20px', borderRadius: '16px',
                             background: 'rgba(255,255,255,0.03)',
-                            width: 'fit-content',
-                            transform: 'translateZ(15px)',
+                            width: isMobile ? '100%' : 'fit-content',
+                            transform: isMobile ? 'none' : 'translateZ(15px)',
                             border: `1px solid ${monadOnly ? THEME_COLOR : 'transparent'}`,
                             transition: 'all 0.2s'
                         }}
@@ -623,7 +663,7 @@ export function SearchInterface({ data, onSearch, onClose }: SearchInterfaceProp
                     </div>
 
                     {/* Action Button or Glitch */}
-                    <div style={{ marginTop: '35px', transform: 'translateZ(30px)' }}>
+                    <div style={{ marginTop: '35px', transform: isMobile ? 'none' : 'translateZ(30px)' }}>
                         {matchCount === 0 ? (
                             <div style={{
                                 padding: '24px',
@@ -634,10 +674,10 @@ export function SearchInterface({ data, onSearch, onClose }: SearchInterfaceProp
                             }}>
                                  <div 
                                     className="glitch" 
-                                    data-text="SCAN COMPLETE. NO DAPPS MATCH YOUR FILTERS."
+                                    data-text={isMobile ? "NO MATCHES" : "SCAN COMPLETE. NO DAPPS MATCH YOUR FILTERS."}
                                     style={{ fontSize: '1rem', textAlign: 'center', fontWeight: 'bold' }}
                                 >
-                                    SCAN COMPLETE. NO DAPPS MATCH YOUR FILTERS.
+                                    {isMobile ? "NO MATCHES FOUND" : "SCAN COMPLETE. NO DAPPS MATCH YOUR FILTERS."}
                                 </div>
                             </div>
                         ) : (

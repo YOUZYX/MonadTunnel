@@ -1,3 +1,4 @@
+
 import React, { useRef, useState, useEffect, useMemo } from 'react';
 import { useFrame, extend } from '@react-three/fiber';
 import { Text, shaderMaterial, Billboard, RoundedBox } from '@react-three/drei';
@@ -72,17 +73,22 @@ extend({ PortalMaterial });
 
 interface TunnelStationsProps {
   data: any[];
+  isMobile: boolean;
   onSelect: (dapp: any) => void;
   highlightId: string | null;
 }
 
 const FALLBACK_LOGO = "https://cdn.prod.website-files.com/669ade140a683001b9f7fd78/68b20be38a9f4a238e4ca802_monad-logo-400_400.webp";
 
-export function OrbitingTiles({ data, onSelect, highlightId }: TunnelStationsProps) {
-  // Parameters for spiral layout
-  const radius = 8; 
-  const zSpacing = 15; 
-  const angleStep = 1.2; 
+export function OrbitingTiles({ data, isMobile, onSelect, highlightId }: TunnelStationsProps) {
+  
+  // Parameters for spiral layout - Synchronized with TunnelScene
+  const radius = isMobile ? 3.5 : 8; 
+  const zSpacing = isMobile ? 22 : 15; 
+  const angleStep = isMobile ? 1.5 : 1.2; // Twist slightly more on mobile
+
+  // Base scale factor: 20% smaller on mobile
+  const baseScale = isMobile ? 0.8 : 1.0;
 
   return (
     <Group>
@@ -99,9 +105,11 @@ export function OrbitingTiles({ data, onSelect, highlightId }: TunnelStationsPro
             key={dapp.id || index}
             position={[x, y, z]}
             rotation={[0, 0, angle * 0.5]} // Initial twist
+            scale={baseScale}
             dapp={dapp}
             onSelect={onSelect}
             isHighlighted={isHighlighted}
+            isMobile={isMobile}
           />
         );
       })}
@@ -109,7 +117,7 @@ export function OrbitingTiles({ data, onSelect, highlightId }: TunnelStationsPro
   );
 }
 
-function PortalStation({ position, rotation, dapp, onSelect, isHighlighted }: any) {
+function PortalStation({ position, rotation, scale, dapp, onSelect, isHighlighted, isMobile }: any) {
   const groupRef = useRef<THREE.Group>(null);
   const frameRef = useRef<THREE.Mesh>(null);
   const materialRef = useRef<any>(null);
@@ -178,8 +186,9 @@ function PortalStation({ position, rotation, dapp, onSelect, isHighlighted }: an
     }
 
     // Portal Opening (Scale)
-    const targetScale = active ? 1.2 : (1 + proximityFactor * 0.1);
-    const currentScale = THREE.MathUtils.lerp(groupRef.current.scale.x, targetScale, delta * 3);
+    const hoverScaleBonus = active ? 0.2 : (proximityFactor * 0.1);
+    // Multiply base scale (from props) with the animation scale
+    const currentScale = THREE.MathUtils.lerp(groupRef.current.scale.x, scale * (1 + hoverScaleBonus), delta * 3);
     groupRef.current.scale.setScalar(currentScale);
 
     // Emissive Pulse
@@ -216,8 +225,10 @@ function PortalStation({ position, rotation, dapp, onSelect, isHighlighted }: an
             onSelect(dapp);
         }}
         onPointerOver={() => {
-            setHover(true);
-            audio.playHover();
+            if (!isMobile) {
+                setHover(true);
+                audio.playHover();
+            }
         }}
         onPointerOut={() => setHover(false)}
       >
@@ -253,23 +264,25 @@ function PortalStation({ position, rotation, dapp, onSelect, isHighlighted }: an
       {/* Text Label (Floating below) */}
       <Group position={[0, -2.5, 0.2]}>
         <Text
-            fontSize={0.5}
+            fontSize={isMobile ? 0.7 : 0.5}
             color="#fff"
             anchorX="center"
             anchorY="top"
-            outlineWidth={0.05}
+            outlineWidth={isMobile ? 0.08 : 0.05}
             outlineColor={dapp.color}
         >
             {dapp.name}
         </Text>
-        <Text
-            fontSize={0.25}
-            color="#ccc"
-            anchorY="top"
-            position={[0, -0.6, 0]}
-        >
-            {dapp.tags}
-        </Text>
+        {!isMobile && (
+            <Text
+                fontSize={0.25}
+                color="#ccc"
+                anchorY="top"
+                position={[0, -0.6, 0]}
+            >
+                {dapp.tags}
+            </Text>
+        )}
       </Group>
     </Group>
   );
