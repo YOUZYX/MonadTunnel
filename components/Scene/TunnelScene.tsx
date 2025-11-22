@@ -230,7 +230,8 @@ export function TunnelScene({
   const tunnelLength = Math.max(1000, itemsLength + 300);
   
   // Position logo safely after the last item
-  const logoPosition: [number, number, number] = [0, 0, -itemsLength - 60];
+  // Increased gap from -60 to -150 to completely isolate the logo from the last dapp
+  const logoPosition: [number, number, number] = [0, 0, -itemsLength - 80];
   
   return (
     <Canvas 

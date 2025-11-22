@@ -30,9 +30,17 @@ function App() {
   // Animation States
   const [isReversing, setIsReversing] = useState(false);
   const [cameraTargetZ, setCameraTargetZ] = useState<number | null>(null);
+  
+  // Mobile Detection & Menu
+  const [isMobile, setIsMobile] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  // Initialize Audio on first interaction
   useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    handleResize(); // Initial check
+    window.addEventListener('resize', handleResize);
+    
+    // Initialize Audio on first interaction
     const handleInteraction = () => {
       audio.init();
       audio.resume();
@@ -44,6 +52,7 @@ function App() {
     window.addEventListener('keydown', handleInteraction);
 
     return () => {
+      window.removeEventListener('resize', handleResize);
       window.removeEventListener('click', handleInteraction);
       window.removeEventListener('keydown', handleInteraction);
     };
@@ -101,10 +110,15 @@ function App() {
       }, 2500); // Slightly longer for impact
   };
   
-  const handleTimeTravelToOracle = () => {
-    const zSpacing = 15;
+  // Calculate tunnel end position based on mobile/desktop spacing to stop accurately
+  const getTunnelEndPosition = () => {
+    const zSpacing = isMobile ? 22 : 15;
     const itemsLength = monEcoData.length * zSpacing;
-    const logoZ = -itemsLength - 50;
+    return -itemsLength - 50;
+  };
+
+  const handleTimeTravelToOracle = () => {
+    const logoZ = getTunnelEndPosition();
     // Buffer to stop slightly before the logo
     setCameraTargetZ(logoZ + 20); 
     audio.playWarp(); // SFX
@@ -131,6 +145,7 @@ function App() {
         {viewMode !== 'VOID' && (
             <TunnelScene 
                 data={filteredData} // Use filteredData here to support warp visualization
+                isMobile={isMobile}
                 onSelectDapp={handleSelectDapp} 
                 highlightId={highlightedId}
                 onLogoClick={() => {
@@ -189,11 +204,108 @@ function App() {
         }} 
       />
       
-      {/* Creator Credit - Bottom Left */}
-      <CreatorCredit />
+      {/* Desktop Controls (Bottom corners) */}
+      {!isMobile && (
+        <>
+          <CreatorCredit />
+          <SoundControl />
+        </>
+      )}
 
-      {/* Audio Control - Bottom Right */}
-      <SoundControl />
+      {/* Mobile Menu Burger & Modal */}
+      {isMobile && (
+        <>
+          <div 
+            onClick={() => {
+              audio.playClick();
+              setMobileMenuOpen(true);
+            }}
+            style={{
+              position: 'absolute',
+              bottom: '10px',
+              right: '10px',
+              width: '50px',
+              height: '50px',
+              borderRadius: '14px',
+              background: 'rgba(131, 110, 249, 0.1)',
+              border: '1px solid rgba(131, 110, 249, 0.4)',
+              backdropFilter: 'blur(10px)',
+              WebkitBackdropFilter: 'blur(10px)',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '6px',
+              zIndex: 100,
+              cursor: 'pointer',
+              boxShadow: '0 8px 32px rgba(0,0,0,0.3)'
+            }}
+          >
+            <div style={{ width: '24px', height: '2px', background: '#fff', borderRadius: '2px' }}></div>
+            <div style={{ width: '24px', height: '2px', background: '#fff', borderRadius: '2px' }}></div>
+            <div style={{ width: '24px', height: '2px', background: '#fff', borderRadius: '2px' }}></div>
+          </div>
+
+          {/* Mobile Modal Overlay */}
+          {mobileMenuOpen && (
+            <div style={{
+              position: 'fixed',
+              top: 0, left: 0, right: 0, bottom: 0,
+              background: 'rgba(0, 0, 0, 0.6)',
+              backdropFilter: 'blur(20px)',
+              WebkitBackdropFilter: 'blur(20px)',
+              zIndex: 200,
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              animation: 'fade-in 0.2s ease-out'
+            }}
+            onClick={(e) => {
+              // Close when clicking outside content
+              if(e.target === e.currentTarget) setMobileMenuOpen(false);
+            }}
+            >
+              <div style={{
+                background: 'rgba(20, 20, 35, 0.8)',
+                border: '1px solid rgba(131, 110, 249, 0.4)',
+                borderRadius: '24px',
+                padding: '30px',
+                width: '85%',
+                maxWidth: '320px',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '25px',
+                boxShadow: '0 20px 50px rgba(0,0,0,0.5)',
+                position: 'relative'
+              }}>
+                {/* Close Button */}
+                <div 
+                  onClick={() => setMobileMenuOpen(false)}
+                  style={{
+                    position: 'absolute',
+                    top: '15px',
+                    right: '15px',
+                    color: 'white',
+                    fontSize: '1.2rem',
+                    cursor: 'pointer',
+                    width: '30px', height: '30px',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    background: 'rgba(255,255,255,0.1)',
+                    borderRadius: '50%'
+                  }}
+                >✕</div>
+
+                <h3 style={{ color: 'white', margin: '0 0 10px 0', textAlign: 'center', fontFamily: 'Inter, sans-serif' }}>SETTINGS</h3>
+                
+                <SoundControl isMobile={true} />
+                <div style={{ width: '100%', height: '1px', background: 'rgba(255,255,255,0.1)' }}></div>
+                <CreatorCredit isMobile={true} />
+              </div>
+            </div>
+          )}
+        </>
+      )}
       
     </div>
   );

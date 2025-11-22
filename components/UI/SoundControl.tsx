@@ -2,7 +2,11 @@
 import React, { useState, useEffect } from 'react';
 import { audio } from '../../services/audioEngine';
 
-export function SoundControl() {
+interface SoundControlProps {
+  isMobile?: boolean;
+}
+
+export function SoundControl({ isMobile = false }: SoundControlProps) {
   const [isMuted, setIsMuted] = useState(false);
   const [hovered, setHovered] = useState(false);
   const [volume, setVolume] = useState(0.5);
@@ -28,38 +32,44 @@ export function SoundControl() {
     }
   };
 
+  // In mobile menu, we force "hovered" visuals or layout to show controls properly
+  const showControls = hovered || isMobile;
+
   return (
     <div 
-      className="sound-control-container"
+      className={isMobile ? "" : "sound-control-container"}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       style={{
-        position: 'absolute',
-        bottom: '20px',
-        right: '20px',
+        position: isMobile ? 'relative' : 'absolute',
+        bottom: isMobile ? 'auto' : '20px',
+        right: isMobile ? 'auto' : '20px',
         display: 'flex',
-        flexDirection: 'column',
+        flexDirection: isMobile ? 'row-reverse' : 'column', // Horizontal on mobile menu
         alignItems: 'center',
+        gap: isMobile ? '15px' : '0',
         zIndex: 100,
+        width: isMobile ? '100%' : 'auto', // Ensure container takes full width on mobile
       }}
     >
       {/* Volume Slider Container */}
       <div style={{
-          width: '48px',
-          height: hovered ? '120px' : '0px',
-          marginBottom: '10px',
+          width: isMobile ? '100%' : '48px', // Full width on mobile
+          height: isMobile ? '48px' : (showControls ? '120px' : '0px'),
+          marginBottom: isMobile ? '0' : '10px',
           background: 'rgba(20, 20, 35, 0.4)',
           backdropFilter: 'blur(12px)',
           WebkitBackdropFilter: 'blur(12px)',
           borderRadius: '24px',
-          border: `1px solid ${hovered ? 'rgba(131, 110, 249, 0.4)' : 'transparent'}`,
+          border: `1px solid ${showControls ? 'rgba(131, 110, 249, 0.4)' : 'transparent'}`,
           display: 'flex',
           justifyContent: 'center',
           alignItems: 'center',
           overflow: 'hidden',
           transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-          opacity: hovered ? 1 : 0,
-          pointerEvents: hovered ? 'auto' : 'none'
+          opacity: showControls ? 1 : 0,
+          pointerEvents: showControls ? 'auto' : 'none',
+          flex: isMobile ? 1 : 'none' // Allow flex growth on mobile
       }}>
           <input 
             type="range" 
@@ -69,9 +79,9 @@ export function SoundControl() {
             value={volume}
             onChange={handleVolumeChange}
             style={{
-                width: '100px', // Actual width before rotation
+                width: isMobile ? '90%' : '100px', // Wider track on mobile
                 height: '4px',
-                transform: 'rotate(-90deg)',
+                transform: isMobile ? 'none' : 'rotate(-90deg)',
                 background: 'transparent',
                 appearance: 'none',
                 cursor: 'pointer',
@@ -90,14 +100,15 @@ export function SoundControl() {
             background: 'rgba(20, 20, 35, 0.4)',
             backdropFilter: 'blur(12px)',
             WebkitBackdropFilter: 'blur(12px)',
-            border: `1px solid ${hovered ? '#836EF9' : 'rgba(255, 255, 255, 0.1)'}`,
+            border: `1px solid ${showControls ? '#836EF9' : 'rgba(255, 255, 255, 0.1)'}`,
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             cursor: 'pointer',
-            boxShadow: hovered ? '0 0 20px rgba(131, 110, 249, 0.4)' : '0 4px 15px rgba(0,0,0,0.3)',
+            boxShadow: showControls ? '0 0 20px rgba(131, 110, 249, 0.4)' : '0 4px 15px rgba(0,0,0,0.3)',
             transition: 'all 0.3s ease',
-            color: hovered ? '#fff' : 'rgba(255,255,255,0.7)'
+            color: showControls ? '#fff' : 'rgba(255,255,255,0.7)',
+            flexShrink: 0
         }}
         title={isMuted ? "Unmute" : "Mute"}
       >

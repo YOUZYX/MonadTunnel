@@ -4,16 +4,20 @@ import React from 'react';
 
 const youzyPfp = "https://avatars.githubusercontent.com/u/80650550?v=4";
 
-export function CreatorCredit() {
+interface CreatorCreditProps {
+  isMobile?: boolean;
+}
+
+export function CreatorCredit({ isMobile = false }: CreatorCreditProps) {
   return (
     <div 
-    className="creator-credit-container"
+    className={isMobile ? "" : "creator-credit-container"}
     style={{
-      position: 'absolute',
-      bottom: '20px',
-      left: '20px',
+      position: isMobile ? 'relative' : 'absolute',
+      bottom: isMobile ? 'auto' : '20px',
+      left: isMobile ? 'auto' : '20px',
       zIndex: 100,
-      background: 'rgba(20, 20, 35, 0.05)',
+      background: isMobile ? 'rgba(255, 255, 255, 0.05)' : 'rgba(20, 20, 35, 0.05)',
       backdropFilter: 'blur(18px)',
       WebkitBackdropFilter: 'blur(18px)',
       border: '1px solid rgba(255, 255, 255, 0.1)',
@@ -22,18 +26,24 @@ export function CreatorCredit() {
       display: 'flex',
       alignItems: 'center',
       gap: '12px',
-      boxShadow: '0 4px 20px rgba(0, 0, 0, 0.3)',
+      boxShadow: isMobile ? 'none' : '0 4px 20px rgba(0, 0, 0, 0.3)',
       transition: 'all 0.3s ease',
       cursor: 'default',
-      userSelect: 'none'
+      userSelect: 'none',
+      width: isMobile ? '100%' : 'auto',
+      justifyContent: isMobile ? 'center' : 'flex-start'
     }}
     onMouseEnter={(e) => {
-        e.currentTarget.style.background = 'rgba(20, 20, 35, 0.1)';
-        e.currentTarget.style.borderColor = 'rgba(131, 110, 249, 0.4)';
+        if (!isMobile) {
+            e.currentTarget.style.background = 'rgba(20, 20, 35, 0.1)';
+            e.currentTarget.style.borderColor = 'rgba(131, 110, 249, 0.4)';
+        }
     }}
     onMouseLeave={(e) => {
-        e.currentTarget.style.background = 'rgba(20, 20, 35, 0.05)';
-        e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.1)';
+        if (!isMobile) {
+            e.currentTarget.style.background = 'rgba(20, 20, 35, 0.05)';
+            e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.1)';
+        }
     }}
     >
       {/* PFP */}
@@ -70,7 +80,7 @@ export function CreatorCredit() {
           Built By YOUZY
         </span>
 
-        <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+        <div style={{ display: 'flex', gap: '10px', alignItems: 'center', justifyContent: isMobile ? 'center' : 'flex-start' }}>
           {/* Github */}
           <a 
             href="https://github.com/YOUZYX" 

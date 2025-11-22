@@ -89,6 +89,10 @@ export function OrbitingTiles({ data, isMobile, onSelect, highlightId }: TunnelS
 
   // Base scale factor: 20% smaller on mobile
   const baseScale = isMobile ? 0.8 : 1.0;
+  
+  // Offset start position deeper into tunnel for mobile to avoid cutoff
+  // Reduced from 45 to 32 to bring first dapps closer while still being safe
+  const startOffset = isMobile ? 32 : 20;
 
   return (
     <Group>
@@ -96,7 +100,7 @@ export function OrbitingTiles({ data, isMobile, onSelect, highlightId }: TunnelS
         const angle = index * angleStep;
         const x = Math.cos(angle) * radius;
         const y = Math.sin(angle) * radius;
-        const z = -index * zSpacing - 20; 
+        const z = -index * zSpacing - startOffset; 
 
         const isHighlighted = highlightId === dapp.id;
 
